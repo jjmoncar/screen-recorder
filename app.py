@@ -14,6 +14,12 @@ def index():
     return render_template("index.html")
 
 
+@app.get("/static/<path:filename>")
+def custom_static(filename):
+    static_dir = Path(__file__).resolve().parent / "static"
+    return send_from_directory(static_dir, filename)
+
+
 @app.get("/api/recordings")
 def list_recordings():
     files = sorted(RECORDINGS.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True)
