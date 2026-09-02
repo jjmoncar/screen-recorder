@@ -16,6 +16,62 @@ let cropRect = null;
 let drawLoop = 0;
 let recording = false;
 
+// --- Almacenamiento local seguro con IndexedDB ---
+const DB_NAME = "ScreenRecorderDB";
+const DB_VERSION = 1;
+const STORE_NAME = "recordings";
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME, { keyPath: "id" });
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function saveToDB(item) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    const store = tx.objectStore(STORE_NAME);
+    const req = store.put(item);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function getAllFromDB() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, "readonly");
+    const store = tx.objectStore(STORE_NAME);
+    const req = store.getAll();
+    req.onsuccess = () => {
+      const items = req.result || [];
+      items.sort((a, b) => b.id - a.id);
+      resolve(items);
+    };
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function deleteFromDB(id) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    const store = tx.objectStore(STORE_NAME);
+    const req = store.delete(id);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
 function mode() {
   return document.querySelector('input[name="mode"]:checked').value;
 }
@@ -51,17 +107,102 @@ function displayMediaOptions() {
 }
 
 async function refreshRecordings() {
-  const res = await fetch("/api/recordings");
-  const items = await res.json();
   recordingsEl.innerHTML = "";
-  if (!items.length) {
-    recordingsEl.innerHTML = "<li>Todavía no hay grabaciones.</li>";
+  let localItems = [];
+
+  try {
+    localItems = await getAllFromDB();
+  } catch (err) {
+    console.warn("IndexedDB no disponible:", err);
+  }
+
+  // Intentamos consultar el backend opcional (por si corre localmente en Flask)
+  let serverItems = [];
+  try {
+    const res = await fetch("/api/recordings");
+    const contentType = res.headers.get("content-type") || "";
+    if (res.ok && contentType.includes("application/json")) {
+      serverItems = await res.json();
+    }
+  } catch {
+    // Silencioso en modo estático/Vercel
+  }
+
+  if (!localItems.length && !serverItems.length) {
+    recordingsEl.innerHTML = "<li class='empty-state'>Todavía no hay grabaciones guardadas.</li>";
     return;
   }
-  for (const item of items) {
+
+  // Mostrar grabaciones de IndexedDB (modo cliente / offline / Vercel)
+  for (const item of localItems) {
     const li = document.createElement("li");
-    const kb = Math.max(1, Math.round(item.size / 1024));
-    li.innerHTML = `<span>${item.name}</span><a href="/recordings/${encodeURIComponent(item.name)}">${kb} KB — descargar</a>`;
+    const mb = (item.size / (1024 * 1024)).toFixed(2);
+    const sizeText = item.size >= 1024 * 1024 ? `${mb} MB` : `${Math.max(1, Math.round(item.size / 1024))} KB`;
+
+    li.innerHTML = `
+      <div class="rec-info">
+        <strong class="rec-title">${item.name}</strong>
+        <span class="rec-meta">${sizeText} • ${item.date || "Grabación"}</span>
+      </div>
+      <div class="rec-actions">
+        <button type="button" class="btn-action btn-play" title="Reproducir en pantalla">▶ Ver</button>
+        <button type="button" class="btn-action btn-download" title="Descargar archivo">⬇ Descargar</button>
+        <button type="button" class="btn-action btn-delete" title="Eliminar grabación">🗑</button>
+      </div>
+    `;
+
+    const playBtn = li.querySelector(".btn-play");
+    const dlBtn = li.querySelector(".btn-download");
+    const delBtn = li.querySelector(".btn-delete");
+
+    playBtn.onclick = () => {
+      const url = URL.createObjectURL(item.blob);
+      preview.srcObject = null;
+      preview.src = url;
+      preview.controls = true;
+      preview.play().catch(() => {});
+      downloadLink.href = url;
+      downloadLink.download = item.name;
+      downloadLink.hidden = false;
+      downloadLink.textContent = `Descargar ${item.name}`;
+      setStatus(`Reproduciendo: ${item.name}`);
+    };
+
+    dlBtn.onclick = () => {
+      const url = URL.createObjectURL(item.blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = item.name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    };
+
+    delBtn.onclick = async () => {
+      if (confirm(`¿Eliminar "${item.name}"?`)) {
+        await deleteFromDB(item.id);
+        await refreshRecordings();
+      }
+    };
+
+    recordingsEl.appendChild(li);
+  }
+
+  // Grabaciones adicionales del servidor (si corre con backend Flask local)
+  for (const sItem of serverItems) {
+    if (localItems.some((l) => l.name === sItem.name)) continue;
+    const li = document.createElement("li");
+    const kb = Math.max(1, Math.round(sItem.size / 1024));
+    li.innerHTML = `
+      <div class="rec-info">
+        <strong class="rec-title">${sItem.name}</strong>
+        <span class="rec-meta">${kb} KB (Servidor)</span>
+      </div>
+      <div class="rec-actions">
+        <a class="btn-action btn-download" href="/recordings/${encodeURIComponent(sItem.name)}" download>⬇ Descargar</a>
+      </div>
+    `;
     recordingsEl.appendChild(li);
   }
 }
@@ -181,6 +322,7 @@ startBtn.onclick = async () => {
   cropRect = null;
   overlay.hidden = true;
   downloadLink.hidden = true;
+  preview.controls = false;
   preview.removeAttribute("src");
   preview.srcObject = null;
 
@@ -208,7 +350,7 @@ startBtn.onclick = async () => {
     overlay.hidden = false;
     startBtn.disabled = true;
     stopBtn.disabled = false;
-    setStatus("Selecciona la zona a grabar");
+    setStatus("Selecciona la zona a grabar con el ratón");
     await new Promise((resolve) => {
       if (preview.readyState >= 1) resolve();
       else preview.onloadedmetadata = resolve;
@@ -250,30 +392,64 @@ async function onStop() {
   startBtn.disabled = false;
   stopBtn.disabled = true;
   stopCaptureTracks();
-  setStatus("Guardando…");
+  setStatus("Procesando grabación…");
 
-  const blob = new Blob(chunks, { type: "video/webm" });
+  const mime = mimeType() || "video/webm";
+  const blob = new Blob(chunks, { type: mime });
+  const timestamp = new Date();
+  const dateStr = timestamp.toLocaleDateString("es-ES", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
   const name = `grabacion-${mode()}-${Date.now()}.webm`;
-  const file = new File([blob], name, { type: "video/webm" });
-  const fd = new FormData();
-  fd.append("video", file);
 
+  // 1. URL directa para reproducción y descarga inmediata (sin depender del servidor)
+  const localUrl = URL.createObjectURL(blob);
+  preview.srcObject = null;
+  preview.src = localUrl;
+  preview.controls = true;
+
+  downloadLink.href = localUrl;
+  downloadLink.download = name;
+  downloadLink.hidden = false;
+  downloadLink.textContent = `Descargar ${name}`;
+
+  // 2. Guardar en IndexedDB del navegador
   try {
-    const res = await fetch("/save", { method: "POST", body: fd });
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error || "Error al guardar");
-
-    const url = URL.createObjectURL(blob);
-    preview.srcObject = null;
-    preview.src = url;
-    downloadLink.href = `/recordings/${encodeURIComponent(data.filename)}`;
-    downloadLink.hidden = false;
-    downloadLink.textContent = `Descargar ${data.filename}`;
-    setStatus("Guardado");
-    await refreshRecordings();
+    await saveToDB({
+      id: Date.now(),
+      name: name,
+      size: blob.size,
+      date: dateStr,
+      blob: blob
+    });
+    setStatus("Grabación guardada");
   } catch (err) {
-    setStatus(err.message || "No se pudo guardar");
+    console.warn("No se pudo guardar en almacenamiento local:", err);
+    setStatus("Grabación lista para descargar");
   }
+
+  // 3. Intento opcional de respaldo en backend Flask (si está presente)
+  try {
+    const file = new File([blob], name, { type: mime });
+    const fd = new FormData();
+    fd.append("video", file);
+
+    const res = await fetch("/save", { method: "POST", body: fd });
+    const contentType = res.headers.get("content-type") || "";
+    if (res.ok && contentType.includes("application/json")) {
+      const data = await res.json();
+      if (data.ok) {
+        console.log("Copia guardada en backend:", data.filename);
+      }
+    }
+  } catch {
+    // Si no hay backend (ej. en Vercel como sitio estático), no interrumpe al usuario
+  }
+
+  await refreshRecordings();
 }
 
 refreshRecordings();

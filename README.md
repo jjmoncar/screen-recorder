@@ -15,7 +15,7 @@ App Flask para grabar la pantalla del PC desde el navegador, con tres modos:
 
 ```bash
 python3 -m venv .venv
-source .venv/bin/activate
+.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 python app.py
 ```
