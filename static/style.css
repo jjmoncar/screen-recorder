@@ -8,7 +8,6 @@
   --accent-hover: #5ab0f7;
   --danger: #e85d5d;
   --danger-hover: #ff7373;
-  --ok: #3ecf8e;
   --border: #2a3644;
 }
 
@@ -23,7 +22,7 @@ body {
 }
 
 .app {
-  max-width: 960px;
+  max-width: 860px;
   margin: 0 auto;
   padding: 2rem 1.25rem 3rem;
 }
@@ -34,7 +33,7 @@ h2 { font-size: 1.15rem; margin: 2rem 0 0.75rem; font-weight: 600; }
 
 .modes {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 0.75rem;
 }
 
@@ -42,7 +41,7 @@ h2 { font-size: 1.15rem; margin: 2rem 0 0.75rem; font-weight: 600; }
   display: flex;
   gap: 0.65rem;
   align-items: flex-start;
-  padding: 0.85rem;
+  padding: 0.9rem 1rem;
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -60,8 +59,8 @@ h2 { font-size: 1.15rem; margin: 2rem 0 0.75rem; font-weight: 600; }
   background: #192635;
 }
 
-.mode-card strong { display: block; font-size: 0.92rem; }
-.mode-card small { color: var(--muted); font-size: 0.8rem; display: block; margin-top: 0.15rem; }
+.mode-card strong { display: block; font-size: 0.95rem; }
+.mode-card small { color: var(--muted); font-size: 0.82rem; display: block; margin-top: 0.15rem; }
 
 .controls {
   display: flex;
@@ -99,8 +98,6 @@ button:disabled {
 #stop { background: var(--danger); color: #fff; }
 #stop:hover:not(:disabled) { background: var(--danger-hover); }
 
-#confirm-crop { background: var(--ok); color: #062016; }
-
 #status {
   margin: 0;
   color: var(--muted);
@@ -137,26 +134,12 @@ button:disabled {
   justify-content: center;
 }
 
-video, canvas {
+video {
   display: block;
   width: 100%;
   max-height: 520px;
   background: #070b10;
 }
-
-.overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 0.75rem;
-  background: rgba(7, 11, 16, 0.6);
-  backdrop-filter: blur(2px);
-}
-
-.overlay p { margin: 0; font-size: 0.9rem; color: #fff; }
-.overlay canvas { cursor: crosshair; flex: 1; }
 
 .live {
   display: inline-block;
@@ -291,7 +274,7 @@ video, canvas {
   background: rgba(232, 93, 93, 0.1);
 }
 
-@media (max-width: 740px) {
+@media (max-width: 640px) {
   .modes { grid-template-columns: 1fr; }
   .library li {
     flex-direction: column;

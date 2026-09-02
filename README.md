@@ -1,10 +1,9 @@
 # Grabador de pantalla
 
-App Flask para grabar la pantalla del PC desde el navegador, con tres modos:
+App Flask para grabar la pantalla del PC desde el navegador, con dos modos:
 
 - **Pantalla completa**: un monitor entero
-- **Navegador**: pestaña o ventana del navegador
-- **Selección**: dibujas un rectángulo y se graba solo esa zona
+- **Navegador**: graba la ventana del navegador y todas sus pestañas al cambiar
 
 ## Requisitos
 

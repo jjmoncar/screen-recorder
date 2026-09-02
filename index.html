@@ -24,15 +24,8 @@
       <label class="mode-card">
         <input type="radio" name="mode" value="window" />
         <span>
-          <strong>Ventana (Navegador)</strong>
-          <small>Graba todas las pestañas al cambiar</small>
-        </span>
-      </label>
-      <label class="mode-card">
-        <input type="radio" name="mode" value="selection" />
-        <span>
-          <strong>Selección</strong>
-          <small>Dibuja la zona a grabar</small>
+          <strong>Navegador</strong>
+          <small>Graba la ventana y todas sus pestañas</small>
         </span>
       </label>
     </section>
@@ -50,11 +43,6 @@
 
     <div class="stage">
       <video id="preview" autoplay muted playsinline></video>
-      <div id="overlay" class="overlay" hidden>
-        <p>Arrastra un rectángulo sobre la imagen y confirma la zona.</p>
-        <canvas id="crop"></canvas>
-        <button id="confirm-crop" type="button">Confirmar zona y grabar</button>
-      </div>
     </div>
 
     <p id="live-badge" class="live" hidden>REC</p>
