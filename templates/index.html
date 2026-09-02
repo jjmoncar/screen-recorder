@@ -13,79 +13,101 @@
   <div class="ambient-glow glow-1"></div>
   <div class="ambient-glow glow-2"></div>
 
-  <main class="app">
-    <header class="app-header">
-      <div class="logo-title">
-        <div class="brand-logo" aria-hidden="true">
-          <svg viewBox="0 0 44 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="32" height="32" rx="9" fill="#1ec5d8" />
-            <path d="M32 11L42 5V27L32 21V11Z" fill="#16abbc" />
-            <circle cx="16" cy="16" r="8" fill="#ffffff" />
-            <circle cx="16" cy="16" r="5.5" fill="#ff4757" />
-          </svg>
+  <div class="page-layout">
+    <!-- Espacio lateral izquierdo para anuncio Adsterra -->
+    <aside class="ad-sidebar" aria-label="Espacio publicitario">
+      <div class="ad-card">
+        <span class="ad-label">Publicidad</span>
+        <div class="ad-content">
+          <script>
+            atOptions = {
+              'key' : 'c44c768779760e29acebbbcfcafb7ad1',
+              'format' : 'iframe',
+              'height' : 250,
+              'width' : 300,
+              'params' : {}
+            };
+          </script>
+          <script src="https://www.highrevenueformat.com/c44c768779760e29acebbbcfcafb7ad1/invoke.js"></script>
         </div>
-        <h1>Grabador de Pantalla Online Gratis</h1>
       </div>
-      <p class="lede">¡Un clic para empezar tus grabaciones ilimitadas!</p>
-    </header>
+    </aside>
 
-    <section class="modes" aria-label="Modo de captura">
-      <label class="mode-card">
-        <input type="radio" name="mode" value="fullscreen" checked />
-        <span class="mode-content">
-          <span class="mode-icon">🖥️</span>
-          <span>
-            <strong>Pantalla completa</strong>
-            <small>Graba todo el monitor</small>
-          </span>
-        </span>
-      </label>
-      <label class="mode-card">
-        <input type="radio" name="mode" value="window" />
-        <span class="mode-content">
-          <span class="mode-icon">🌐</span>
-          <span>
-            <strong>Navegador</strong>
-            <small>Graba la ventana y todas sus pestañas</small>
-          </span>
-        </span>
-      </label>
-    </section>
+    <main class="app">
+      <header class="app-header">
+        <div class="logo-title">
+          <div class="brand-logo" aria-hidden="true">
+            <svg viewBox="0 0 44 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="32" height="32" rx="9" fill="#1ec5d8" />
+              <path d="M32 11L42 5V27L32 21V11Z" fill="#16abbc" />
+              <circle cx="16" cy="16" r="8" fill="#ffffff" />
+              <circle cx="16" cy="16" r="5.5" fill="#ff4757" />
+            </svg>
+          </div>
+          <h1>Grabador de Pantalla Online Gratis</h1>
+        </div>
+        <p class="lede">¡Un clic para empezar tus grabaciones ilimitadas!</p>
+      </header>
 
-    <div class="controls">
-      <button id="start" type="button" class="btn-start">
-        <span class="btn-rec-dot"></span>
-        <span>Empezar a grabar</span>
-      </button>
-      <button id="stop" type="button" class="btn-stop" disabled>
-        <span class="btn-stop-icon">■</span>
-        <span>Detener</span>
-      </button>
-      <div class="status-wrapper">
-        <span class="status-indicator"></span>
-        <p id="status" role="status">Listo</p>
+      <section class="modes" aria-label="Modo de captura">
+        <label class="mode-card">
+          <input type="radio" name="mode" value="fullscreen" checked />
+          <span class="mode-content">
+            <span class="mode-icon">🖥️</span>
+            <span>
+              <strong>Pantalla completa</strong>
+              <small>Graba todo el monitor</small>
+            </span>
+          </span>
+        </label>
+        <label class="mode-card">
+          <input type="radio" name="mode" value="window" />
+          <span class="mode-content">
+            <span class="mode-icon">🌐</span>
+            <span>
+              <strong>Navegador</strong>
+              <small>Graba la ventana y todas sus pestañas</small>
+            </span>
+          </span>
+        </label>
+      </section>
+
+      <div class="controls">
+        <button id="start" type="button" class="btn-start">
+          <span class="btn-rec-dot"></span>
+          <span>Empezar a grabar</span>
+        </button>
+        <button id="stop" type="button" class="btn-stop" disabled>
+          <span class="btn-stop-icon">■</span>
+          <span>Detener</span>
+        </button>
+        <div class="status-wrapper">
+          <span class="status-indicator"></span>
+          <p id="status" role="status">Listo</p>
+        </div>
       </div>
-    </div>
 
-    <div class="hint-box">
-      <span class="hint-icon">💡</span>
-      <span id="mode-hint">Modo <strong>Pantalla completa</strong>: capturará todo lo que se vea en el monitor seleccionado.</span>
-    </div>
+      <div class="hint-box">
+        <span class="hint-icon">💡</span>
+        <span id="mode-hint">Modo <strong>Pantalla completa</strong>: capturará todo lo que se vea en el monitor seleccionado.</span>
+      </div>
 
-    <div class="stage">
-      <video id="preview" autoplay muted playsinline></video>
-      <p id="live-badge" class="live" hidden>
-        <span class="live-dot"></span> REC
-      </p>
-    </div>
+      <div class="stage">
+        <video id="preview" autoplay muted playsinline></video>
+        <p id="live-badge" class="live" hidden>
+          <span class="live-dot"></span> REC
+        </p>
+      </div>
 
-    <a id="download" hidden>Descargar última grabación</a>
+      <a id="download" hidden>Descargar última grabación</a>
 
-    <section class="library">
-      <h2>Grabaciones guardadas</h2>
-      <ul id="recordings"></ul>
-    </section>
-  </main>
+      <section class="library">
+        <h2>Grabaciones guardadas</h2>
+        <ul id="recordings"></ul>
+      </section>
+    </main>
+  </div>
+
   <script src="/static/app.js"></script>
 </body>
 </html>

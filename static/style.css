@@ -61,12 +61,69 @@ body {
   background: radial-gradient(circle, rgba(15, 68, 86, 0.28) 0%, transparent 70%);
 }
 
-.app {
+.page-layout {
   position: relative;
   z-index: 1;
-  max-width: 880px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 2.25rem;
+  max-width: 1240px;
   margin: 0 auto;
-  padding: 2.5rem 1.5rem 4rem;
+  padding: 2.5rem 1.25rem 4rem;
+}
+
+/* Ad Sidebar on the Left (Adsterra) */
+.ad-sidebar {
+  width: 320px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.ad-card {
+  width: 100%;
+  max-width: 320px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 0.85rem 0.75rem 1rem;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(30, 197, 216, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ad-label {
+  font-size: 0.72rem;
+  color: var(--text-subtle);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.65rem;
+  font-weight: 500;
+}
+
+.ad-content {
+  width: 300px;
+  min-height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(30, 197, 216, 0.12);
+}
+
+.app {
+  flex: 1;
+  max-width: 860px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
 }
 
 /* Header & Brand Logo */
@@ -516,6 +573,26 @@ h2 {
 }
 
 /* Responsive adjustments */
+@media (max-width: 1140px) {
+  .page-layout {
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    padding: 2rem 1.25rem 3.5rem;
+  }
+
+  .ad-sidebar {
+    width: 100%;
+    position: static;
+    order: 2; /* On tablets and mobile, ad sits cleanly after app content */
+    margin: 1.5rem auto 0;
+  }
+
+  .app {
+    width: 100%;
+  }
+}
+
 @media (max-width: 680px) {
   h1 { font-size: 1.65rem; }
   .logo-title { flex-direction: column; gap: 0.4rem; }
@@ -528,5 +605,12 @@ h2 {
   .rec-actions {
     width: 100%;
     justify-content: flex-end;
+  }
+}
+
+@media (max-width: 360px) {
+  .ad-content {
+    transform: scale(0.9);
+    transform-origin: center center;
   }
 }
