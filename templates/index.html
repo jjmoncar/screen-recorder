@@ -18,14 +18,21 @@
         <input type="radio" name="mode" value="fullscreen" checked />
         <span>
           <strong>Pantalla completa</strong>
-          <small>Graba un monitor entero</small>
+          <small>Graba todo el monitor</small>
         </span>
       </label>
       <label class="mode-card">
-        <input type="radio" name="mode" value="browser" />
+        <input type="radio" name="mode" value="window" />
         <span>
-          <strong>Navegador</strong>
-          <small>Pestaña o ventana del navegador</small>
+          <strong>Ventana (Navegador)</strong>
+          <small>Graba todas las pestañas al cambiar</small>
+        </span>
+      </label>
+      <label class="mode-card">
+        <input type="radio" name="mode" value="tab" />
+        <span>
+          <strong>Pestaña única</strong>
+          <small>Solo una pestaña específica</small>
         </span>
       </label>
       <label class="mode-card">
@@ -41,6 +48,11 @@
       <button id="start" type="button">Grabar</button>
       <button id="stop" type="button" disabled>Detener</button>
       <p id="status" role="status">Listo</p>
+    </div>
+
+    <div class="hint-box">
+      <span class="hint-icon">💡</span>
+      <span id="mode-hint">Modo <strong>Pantalla completa</strong>: capturará todo lo que se vea en el monitor seleccionado.</span>
     </div>
 
     <div class="stage">

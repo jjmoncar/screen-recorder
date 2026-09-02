@@ -8,6 +8,8 @@ const confirmCrop = document.getElementById("confirm-crop");
 const downloadLink = document.getElementById("download");
 const liveBadge = document.getElementById("live-badge");
 const recordingsEl = document.getElementById("recordings");
+const modeHintEl = document.getElementById("mode-hint");
+const modeInputs = document.querySelectorAll('input[name="mode"]');
 
 let recorder = null;
 let chunks = [];
@@ -80,6 +82,25 @@ function setStatus(text) {
   statusEl.textContent = text;
 }
 
+function updateHint() {
+  if (!modeHintEl) return;
+  const m = mode();
+  if (m === "window") {
+    modeHintEl.innerHTML = `Modo <strong>Ventana (Navegador)</strong>: En el diálogo de captura selecciona la pestaña <strong>"Ventana"</strong> y elige tu navegador. Al cambiar de pestañas se grabará todo lo que hagas dentro de esa ventana.`;
+  } else if (m === "tab") {
+    modeHintEl.innerHTML = `Modo <strong>Pestaña única</strong>: Graba únicamente una pestaña específica. Si cambias de pestaña, la grabación continuará solo en la pestaña original.`;
+  } else if (m === "selection") {
+    modeHintEl.innerHTML = `Modo <strong>Selección</strong>: Primero se abrirá la vista previa para que dibujes con el ratón la zona rectangular exacta que deseas grabar.`;
+  } else {
+    modeHintEl.innerHTML = `Modo <strong>Pantalla completa</strong>: Graba todo lo que ocurra en el monitor seleccionado.`;
+  }
+}
+
+modeInputs.forEach((input) => {
+  input.addEventListener("change", updateHint);
+});
+updateHint();
+
 function mimeType() {
   const types = [
     "video/webm;codecs=vp9,opus",
@@ -91,14 +112,24 @@ function mimeType() {
 
 function displayMediaOptions() {
   const m = mode();
-  if (m === "browser") {
+  if (m === "window") {
+    // Solicita capturar una ventana completa (permite cambiar de pestañas en el navegador)
+    return {
+      video: { displaySurface: "window", cursor: "always" },
+      audio: true,
+      preferCurrentTab: false,
+    };
+  }
+  if (m === "tab") {
+    // Solicita capturar una pestaña específica
     return {
       video: { displaySurface: "browser", cursor: "always" },
       audio: true,
-      preferCurrentTab: true,
+      preferCurrentTab: false,
       selfBrowserSurface: "include",
     };
   }
+  // fullscreen o selection
   return {
     video: { displaySurface: "monitor", cursor: "always" },
     audio: true,
@@ -116,7 +147,7 @@ async function refreshRecordings() {
     console.warn("IndexedDB no disponible:", err);
   }
 
-  // Intentamos consultar el backend opcional (por si corre localmente en Flask)
+  // Intentamos consultar el backend opcional si corre localmente
   let serverItems = [];
   try {
     const res = await fetch("/api/recordings");
@@ -133,7 +164,6 @@ async function refreshRecordings() {
     return;
   }
 
-  // Mostrar grabaciones de IndexedDB (modo cliente / offline / Vercel)
   for (const item of localItems) {
     const li = document.createElement("li");
     const mb = (item.size / (1024 * 1024)).toFixed(2);
@@ -359,7 +389,10 @@ startBtn.onclick = async () => {
     return;
   }
 
-  const label = mode() === "browser" ? "Grabando navegador…" : "Grabando pantalla completa…";
+  let label = "Grabando pantalla completa…";
+  if (mode() === "window") label = "Grabando ventana del navegador (todas las pestañas)…";
+  else if (mode() === "tab") label = "Grabando pestaña individual…";
+  else if (mode() === "selection") label = "Grabando zona seleccionada…";
   setStatus(label);
   startRecorder(captureStream);
 };
@@ -405,7 +438,7 @@ async function onStop() {
   });
   const name = `grabacion-${mode()}-${Date.now()}.webm`;
 
-  // 1. URL directa para reproducción y descarga inmediata (sin depender del servidor)
+  // 1. URL directa para reproducción y descarga inmediata
   const localUrl = URL.createObjectURL(blob);
   preview.srcObject = null;
   preview.src = localUrl;
@@ -425,13 +458,13 @@ async function onStop() {
       date: dateStr,
       blob: blob
     });
-    setStatus("Grabación guardada");
+    setStatus("Grabación guardada con éxito");
   } catch (err) {
     console.warn("No se pudo guardar en almacenamiento local:", err);
     setStatus("Grabación lista para descargar");
   }
 
-  // 3. Intento opcional de respaldo en backend Flask (si está presente)
+  // 3. Respaldo opcional en Flask backend si corre localmente
   try {
     const file = new File([blob], name, { type: mime });
     const fd = new FormData();
@@ -446,7 +479,7 @@ async function onStop() {
       }
     }
   } catch {
-    // Si no hay backend (ej. en Vercel como sitio estático), no interrumpe al usuario
+    // Silencioso en modo estático/Vercel
   }
 
   await refreshRecordings();
