@@ -95,6 +95,12 @@ updateHint();
 
 function mimeType() {
   const types = [
+    "video/mp4;codecs=avc1,mp4a.40.2",
+    "video/mp4;codecs=avc1,opus",
+    "video/mp4;codecs=avc1",
+    "video/mp4;codecs=h264",
+    "video/mp4",
+    "video/webm;codecs=h264,opus",
     "video/webm;codecs=vp9,opus",
     "video/webm;codecs=vp8,opus",
     "video/webm",
@@ -287,7 +293,7 @@ async function onStop() {
   stopCaptureTracks();
   setStatus("Procesando grabación…");
 
-  const mime = mimeType() || "video/webm";
+  const mime = mimeType() || "video/mp4";
   const blob = new Blob(chunks, { type: mime });
   const timestamp = new Date();
   const dateStr = timestamp.toLocaleDateString("es-ES", {
@@ -296,7 +302,7 @@ async function onStop() {
     hour: "2-digit",
     minute: "2-digit"
   });
-  const name = `grabacion-${mode()}-${Date.now()}.webm`;
+  const name = `grabacion-${mode()}-${Date.now()}.mp4`;
 
   const localUrl = URL.createObjectURL(blob);
   preview.srcObject = null;
@@ -308,6 +314,21 @@ async function onStop() {
   downloadLink.hidden = false;
   downloadLink.textContent = `Descargar ${name}`;
 
+  // Descarga automática inmediata en formato .mp4
+  try {
+    const a = document.createElement("a");
+    a.href = localUrl;
+    a.download = name;
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+    }, 150);
+  } catch (err) {
+    console.warn("No se pudo iniciar la descarga automática:", err);
+  }
+
   try {
     await saveToDB({
       id: Date.now(),
@@ -316,10 +337,10 @@ async function onStop() {
       date: dateStr,
       blob: blob
     });
-    setStatus("Grabación guardada con éxito");
+    setStatus(`¡Grabación finalizada y descargada (${name})!`);
   } catch (err) {
     console.warn("No se pudo guardar en almacenamiento local:", err);
-    setStatus("Grabación lista para descargar");
+    setStatus(`Descarga iniciada: ${name}`);
   }
 
   try {
