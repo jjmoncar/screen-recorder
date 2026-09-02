@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Grabador de pantalla</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <main class="app">
+    <header>
+      <h1>Grabador de pantalla</h1>
+      <p class="lede">Elige un modo, pulsa Grabar y concede el permiso de captura en el navegador.</p>
+    </header>
+
+    <section class="modes" aria-label="Modo de captura">
+      <label class="mode-card">
+        <input type="radio" name="mode" value="fullscreen" checked />
+        <span>
+          <strong>Pantalla completa</strong>
+          <small>Graba un monitor entero</small>
+        </span>
+      </label>
+      <label class="mode-card">
+        <input type="radio" name="mode" value="browser" />
+        <span>
+          <strong>Navegador</strong>
+          <small>Pestaña o ventana del navegador</small>
+        </span>
+      </label>
+      <label class="mode-card">
+        <input type="radio" name="mode" value="selection" />
+        <span>
+          <strong>Selección</strong>
+          <small>Dibuja la zona a grabar</small>
+        </span>
+      </label>
+    </section>
+
+    <div class="controls">
+      <button id="start" type="button">Grabar</button>
+      <button id="stop" type="button" disabled>Detener</button>
+      <p id="status" role="status">Listo</p>
+    </div>
+
+    <div class="stage">
+      <video id="preview" autoplay muted playsinline></video>
+      <div id="overlay" class="overlay" hidden>
+        <p>Arrastra un rectángulo sobre la imagen y confirma la zona.</p>
+        <canvas id="crop"></canvas>
+        <button id="confirm-crop" type="button">Confirmar zona y grabar</button>
+      </div>
+    </div>
+
+    <p id="live-badge" class="live" hidden>REC</p>
+    <a id="download" hidden>Descargar última grabación</a>
+
+    <section class="library">
+      <h2>Grabaciones</h2>
+      <ul id="recordings"></ul>
+    </section>
+  </main>
+  <script src="/static/app.js"></script>
+</body>
+</html>

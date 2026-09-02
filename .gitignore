@@ -1,0 +1,7 @@
+.venv/
+.pydeps/
+__pycache__/
+*.pyc
+recordings/*.webm
+recordings/*.mp4
+.DS_Store
