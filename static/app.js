@@ -87,8 +87,6 @@ function updateHint() {
   const m = mode();
   if (m === "window") {
     modeHintEl.innerHTML = `Modo <strong>Ventana (Navegador)</strong>: En el diálogo de captura selecciona la pestaña <strong>"Ventana"</strong> y elige tu navegador. Al cambiar de pestañas se grabará todo lo que hagas dentro de esa ventana.`;
-  } else if (m === "tab") {
-    modeHintEl.innerHTML = `Modo <strong>Pestaña única</strong>: Graba únicamente una pestaña específica. Si cambias de pestaña, la grabación continuará solo en la pestaña original.`;
   } else if (m === "selection") {
     modeHintEl.innerHTML = `Modo <strong>Selección</strong>: Primero se abrirá la vista previa para que dibujes con el ratón la zona rectangular exacta que deseas grabar.`;
   } else {
@@ -118,15 +116,6 @@ function displayMediaOptions() {
       video: { displaySurface: "window", cursor: "always" },
       audio: true,
       preferCurrentTab: false,
-    };
-  }
-  if (m === "tab") {
-    // Solicita capturar una pestaña específica
-    return {
-      video: { displaySurface: "browser", cursor: "always" },
-      audio: true,
-      preferCurrentTab: false,
-      selfBrowserSurface: "include",
     };
   }
   // fullscreen o selection
@@ -391,7 +380,6 @@ startBtn.onclick = async () => {
 
   let label = "Grabando pantalla completa…";
   if (mode() === "window") label = "Grabando ventana del navegador (todas las pestañas)…";
-  else if (mode() === "tab") label = "Grabando pestaña individual…";
   else if (mode() === "selection") label = "Grabando zona seleccionada…";
   setStatus(label);
   startRecorder(captureStream);

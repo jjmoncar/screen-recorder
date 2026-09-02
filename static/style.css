@@ -34,7 +34,7 @@ h2 { font-size: 1.15rem; margin: 2rem 0 0.75rem; font-weight: 600; }
 
 .modes {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 0.75rem;
 }
 
@@ -291,11 +291,7 @@ video, canvas {
   background: rgba(232, 93, 93, 0.1);
 }
 
-@media (max-width: 860px) {
-  .modes { grid-template-columns: repeat(2, 1fr); }
-}
-
-@media (max-width: 540px) {
+@media (max-width: 740px) {
   .modes { grid-template-columns: 1fr; }
   .library li {
     flex-direction: column;
