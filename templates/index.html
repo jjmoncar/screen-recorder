@@ -3,37 +3,68 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Grabador de pantalla</title>
+  <title>Grabador de Pantalla Online</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+
   <main class="app">
-    <header>
-      <h1>Grabador de pantalla</h1>
-      <p class="lede">Elige un modo, pulsa Grabar y concede el permiso de captura en el navegador.</p>
+    <header class="app-header">
+      <div class="logo-title">
+        <div class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 44 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="32" height="32" rx="9" fill="#1ec5d8" />
+            <path d="M32 11L42 5V27L32 21V11Z" fill="#16abbc" />
+            <circle cx="16" cy="16" r="8" fill="#ffffff" />
+            <circle cx="16" cy="16" r="5.5" fill="#ff4757" />
+          </svg>
+        </div>
+        <h1>Grabador de Pantalla Online Gratis</h1>
+      </div>
+      <p class="lede">¡Un clic para empezar tus grabaciones ilimitadas!</p>
     </header>
 
     <section class="modes" aria-label="Modo de captura">
       <label class="mode-card">
         <input type="radio" name="mode" value="fullscreen" checked />
-        <span>
-          <strong>Pantalla completa</strong>
-          <small>Graba todo el monitor</small>
+        <span class="mode-content">
+          <span class="mode-icon">🖥️</span>
+          <span>
+            <strong>Pantalla completa</strong>
+            <small>Graba todo el monitor</small>
+          </span>
         </span>
       </label>
       <label class="mode-card">
         <input type="radio" name="mode" value="window" />
-        <span>
-          <strong>Navegador</strong>
-          <small>Graba la ventana y todas sus pestañas</small>
+        <span class="mode-content">
+          <span class="mode-icon">🌐</span>
+          <span>
+            <strong>Navegador</strong>
+            <small>Graba la ventana y todas sus pestañas</small>
+          </span>
         </span>
       </label>
     </section>
 
     <div class="controls">
-      <button id="start" type="button">Grabar</button>
-      <button id="stop" type="button" disabled>Detener</button>
-      <p id="status" role="status">Listo</p>
+      <button id="start" type="button" class="btn-start">
+        <span class="btn-rec-dot"></span>
+        <span>Empezar a grabar</span>
+      </button>
+      <button id="stop" type="button" class="btn-stop" disabled>
+        <span class="btn-stop-icon">■</span>
+        <span>Detener</span>
+      </button>
+      <div class="status-wrapper">
+        <span class="status-indicator"></span>
+        <p id="status" role="status">Listo</p>
+      </div>
     </div>
 
     <div class="hint-box">
@@ -43,9 +74,11 @@
 
     <div class="stage">
       <video id="preview" autoplay muted playsinline></video>
+      <p id="live-badge" class="live" hidden>
+        <span class="live-dot"></span> REC
+      </p>
     </div>
 
-    <p id="live-badge" class="live" hidden>REC</p>
     <a id="download" hidden>Descargar última grabación</a>
 
     <section class="library">
