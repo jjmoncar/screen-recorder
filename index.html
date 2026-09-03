@@ -108,6 +108,16 @@
 
       <div class="stage">
         <video id="preview" autoplay muted playsinline></video>
+        <div id="countdown-overlay" class="countdown-overlay" hidden>
+          <div class="countdown-circle">
+            <svg class="countdown-svg" viewBox="0 0 100 100">
+              <circle class="countdown-bg-ring" cx="50" cy="50" r="44" />
+              <circle id="countdown-progress-ring" class="countdown-progress-ring" cx="50" cy="50" r="44" />
+            </svg>
+            <div id="countdown-number" class="countdown-number">5</div>
+          </div>
+          <div id="countdown-text" class="countdown-text">Iniciando en 5 segundos...</div>
+        </div>
         <p id="live-badge" class="live" hidden>
           <span class="live-dot"></span> REC
         </p>

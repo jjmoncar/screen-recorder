@@ -7,11 +7,17 @@ const liveBadge = document.getElementById("live-badge");
 const recordingsEl = document.getElementById("recordings");
 const modeHintEl = document.getElementById("mode-hint");
 const modeInputs = document.querySelectorAll('input[name="mode"]');
+const countdownOverlay = document.getElementById("countdown-overlay");
+const countdownNumber = document.getElementById("countdown-number");
+const countdownProgressRing = document.getElementById("countdown-progress-ring");
+const countdownText = document.getElementById("countdown-text");
 
 let recorder = null;
 let chunks = [];
 let captureStream = null;
 let recording = false;
+let countdownTimer = null;
+let isCountingDown = false;
 
 // --- Almacenamiento local seguro con IndexedDB ---
 const DB_NAME = "ScreenRecorderDB";
@@ -227,6 +233,92 @@ function stopCaptureTracks() {
   captureStream = null;
 }
 
+function playBeep(frequency = 600, duration = 0.08, type = "sine") {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(frequency, ctx.currentTime);
+    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + duration);
+  } catch {
+    // Silencioso si las políticas de audio del navegador lo bloquean
+  }
+}
+
+function cancelCountdown() {
+  if (isCountingDown) {
+    if (countdownTimer) {
+      clearInterval(countdownTimer);
+      countdownTimer = null;
+    }
+    isCountingDown = false;
+    if (countdownOverlay) {
+      countdownOverlay.hidden = true;
+    }
+    return true;
+  }
+  return false;
+}
+
+function runCountdown(seconds, onComplete) {
+  isCountingDown = true;
+  startBtn.disabled = true;
+  stopBtn.disabled = false;
+
+  if (countdownOverlay) countdownOverlay.hidden = false;
+
+  let remaining = seconds;
+  const total = seconds;
+  const circumference = 2 * Math.PI * 44; // 276.46 para r=44
+
+  if (countdownProgressRing) {
+    countdownProgressRing.style.strokeDasharray = `${circumference}`;
+    countdownProgressRing.style.strokeDashoffset = `0`;
+  }
+
+  function updateStep(val) {
+    if (countdownNumber) {
+      countdownNumber.textContent = val;
+      countdownNumber.classList.remove("pop");
+      void countdownNumber.offsetWidth; // reiniciar animación css
+      countdownNumber.classList.add("pop");
+    }
+    if (countdownText) {
+      countdownText.textContent = val > 1 ? `La grabación comienza en ${val} segundos...` : `¡Preparados! Comenzando...`;
+    }
+    if (countdownProgressRing) {
+      const offset = circumference * (1 - (val - 1) / total);
+      countdownProgressRing.style.strokeDashoffset = `${offset}`;
+    }
+    setStatus(`Comenzando grabación en ${val}s... (Presiona "Detener" para cancelar)`);
+    playBeep(val === 1 ? 700 : 520, 0.08);
+  }
+
+  updateStep(remaining);
+
+  countdownTimer = setInterval(() => {
+    remaining--;
+    if (remaining > 0) {
+      updateStep(remaining);
+    } else {
+      clearInterval(countdownTimer);
+      countdownTimer = null;
+      isCountingDown = false;
+      if (countdownOverlay) countdownOverlay.hidden = true;
+      playBeep(920, 0.22, "triangle");
+      if (onComplete) onComplete();
+    }
+  }, 1000);
+}
+
 function startRecorder(stream) {
   chunks = [];
   const mime = mimeType();
@@ -243,6 +335,7 @@ function startRecorder(stream) {
 }
 
 startBtn.onclick = async () => {
+  cancelCountdown();
   downloadLink.hidden = true;
   preview.controls = false;
   preview.removeAttribute("src");
@@ -259,20 +352,41 @@ startBtn.onclick = async () => {
   await preview.play().catch(() => {});
 
   captureStream.getVideoTracks()[0].addEventListener("ended", () => {
-    if (recording) stopBtn.click();
-    else {
+    if (isCountingDown) {
+      cancelCountdown();
+      stopCaptureTracks();
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+      preview.srcObject = null;
+      setStatus("Captura cancelada");
+    } else if (recording) {
+      stopBtn.click();
+    } else {
       stopCaptureTracks();
       startBtn.disabled = false;
       setStatus("Captura finalizada");
     }
   });
 
-  const label = mode() === "window" ? "Grabando navegador (todas las pestañas)…" : "Grabando pantalla completa…";
-  setStatus(label);
-  startRecorder(captureStream);
+  // Cuenta regresiva de 5 segundos antes de comenzar la grabación
+  runCountdown(5, () => {
+    const label = mode() === "window" ? "Grabando navegador (todas las pestañas)…" : "Grabando pantalla completa…";
+    setStatus(label);
+    startRecorder(captureStream);
+  });
 };
 
 stopBtn.onclick = () => {
+  if (isCountingDown) {
+    cancelCountdown();
+    stopCaptureTracks();
+    startBtn.disabled = false;
+    stopBtn.disabled = true;
+    preview.srcObject = null;
+    setStatus("Cuenta regresiva cancelada");
+    return;
+  }
+
   if (recorder && recorder.state !== "inactive") {
     recorder.stop();
   } else {
